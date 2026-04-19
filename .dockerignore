@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Next.js build output (rebuilt inside Docker)
+.next
+out
+
+# Dependencies (reinstalled inside Docker)
+node_modules
+
+# Environment files (injected at runtime)
+.env
+.env.local
+.env.*.local
+
+# Dev tools
+.eslintcache
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode
+.idea
+
+# Claude / agents
+.claude
+.agents
+skills-lock.json
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+docker-entrypoint.sh
+
+# Docs (optional — remove if you want them in image)
+README.md

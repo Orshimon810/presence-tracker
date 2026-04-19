@@ -1,0 +1,48 @@
+version: "3.9"
+
+# ─── Local development with a real Postgres ───────────────────────────────────
+# Usage:
+#   docker compose up          → starts Postgres + app (production build)
+#   docker compose up db       → starts only Postgres (use npm run dev for the app)
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: presence
+      POSTGRES_PASSWORD: presence
+      POSTGRES_DB: presence_tracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U presence -d presence_tracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Next.js app (production image) ──────────────────────────────────────────
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      # Overrides the .env DATABASE_URL to point at the local db service
+      DATABASE_URL: "postgresql://presence:presence@db:5432/presence_tracker"
+      AUTH_URL: "http://localhost:3000"
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

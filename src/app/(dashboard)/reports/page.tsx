@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { AttendanceChart } from "@/components/dashboard/AttendanceChart";
 import { StatsCard } from "@/components/dashboard/StatsCard";
+import { SyncSheetsButton } from "@/components/reports/SyncSheetsButton";
 
 export default async function ReportsPage({
   searchParams,
@@ -43,13 +44,14 @@ export default async function ReportsPage({
       <Header
         title="דוחות וסטטיסטיקות"
         actions={
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Link href={`${exportBase}&format=csv`} target="_blank">
               <Button variant="secondary" size="sm">ייצוא CSV</Button>
             </Link>
             <Link href={`${exportBase}&format=xlsx`} target="_blank">
               <Button variant="secondary" size="sm">ייצוא Excel</Button>
             </Link>
+            <SyncSheetsButton />
           </div>
         }
       />
