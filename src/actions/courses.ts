@@ -60,7 +60,12 @@ export async function getCourse(courseId: string) {
 
 export async function createCourse(data: CourseInput) {
   const session = await getSession();
-  if (session.user.role !== "ADMIN") throw new Error("Forbidden");
+  const { role, id } = session.user;
+
+  if (role === "COORDINATOR") throw new Error("Forbidden");
+
+  // Instructors can only create courses for themselves
+  if (role === "INSTRUCTOR") data = { ...data, instructorId: id };
 
   const validated = courseSchema.parse(data);
   const course = await prisma.course.create({
