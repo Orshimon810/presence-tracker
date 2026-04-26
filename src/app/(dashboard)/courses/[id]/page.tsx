@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { formatDate } from "@/lib/utils";
 import { AddStudentModal } from "@/components/students/AddStudentModal";
 import { DeleteCourseButton } from "@/components/courses/DeleteCourseButton";
+import { RemoveStudentButton } from "@/components/students/RemoveStudentButton";
 
 export default async function CourseDetailPage({
   params,
@@ -29,6 +30,8 @@ export default async function CourseDetailPage({
   const userId = session?.user.id;
   const canEdit = role !== "COORDINATOR";
   const isOwnerOrAdmin = role === "ADMIN" || (role === "INSTRUCTOR" && course.instructorId === userId);
+  const canManageStudents =
+    isOwnerOrAdmin || (role === "COORDINATOR" && course.coordinatorId === userId);
 
   return (
     <div>
@@ -130,6 +133,13 @@ export default async function CourseDetailPage({
                       {student.fullName.charAt(0)}
                     </div>
                     <span className="text-gray-800">{student.fullName}</span>
+                    {canManageStudents && (
+                      <RemoveStudentButton
+                        studentId={student.id}
+                        courseId={id}
+                        studentName={student.fullName}
+                      />
+                    )}
                   </li>
                 ))}
               </ul>

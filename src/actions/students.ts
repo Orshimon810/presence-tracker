@@ -93,7 +93,19 @@ export async function enrollStudentInCourse(studentId: string, courseId: string)
 
 export async function removeStudentFromCourse(studentId: string, courseId: string) {
   const userSession = await getSession();
-  if (userSession.user.role === "COORDINATOR") throw new Error("Forbidden");
+  const { role, id } = userSession.user;
+
+  if (role !== "ADMIN") {
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      select: { instructorId: true, coordinatorId: true },
+    });
+    if (!course) throw new Error("Course not found");
+    const isOwner =
+      (role === "INSTRUCTOR" && course.instructorId === id) ||
+      (role === "COORDINATOR" && course.coordinatorId === id);
+    if (!isOwner) throw new Error("Forbidden");
+  }
 
   await prisma.courseStudent.delete({
     where: { courseId_studentId: { courseId, studentId } },
