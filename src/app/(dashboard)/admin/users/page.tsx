@@ -11,24 +11,27 @@ import { UserActionsCell } from "@/components/admin/UserActionsCell";
 
 export default async function UsersPage() {
   const session = await auth();
-  if (session?.user.role !== "ADMIN") redirect("/dashboard");
+  if (!session?.user || session.user.role === "INSTRUCTOR") redirect("/dashboard");
 
+  const isAdmin = session.user.role === "ADMIN";
   const users = await getUsers();
 
   return (
     <div>
       <Header
-        title="ניהול משתמשים"
-        subtitle={`${users.length} משתמשים במערכת`}
+        title={isAdmin ? "ניהול משתמשים" : "המדריכים שלי"}
+        subtitle={`${users.length} ${isAdmin ? "משתמשים במערכת" : "מדריכים"}`}
         actions={
-          <Link href="/admin/users/new">
-            <Button>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              משתמש חדש
-            </Button>
-          </Link>
+          isAdmin ? (
+            <Link href="/admin/users/new">
+              <Button>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                משתמש חדש
+              </Button>
+            </Link>
+          ) : null
         }
       />
 

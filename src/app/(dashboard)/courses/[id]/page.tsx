@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { formatDate } from "@/lib/utils";
 import { AddStudentModal } from "@/components/students/AddStudentModal";
+import { DeleteCourseButton } from "@/components/courses/DeleteCourseButton";
 
 export default async function CourseDetailPage({
   params,
@@ -24,7 +25,10 @@ export default async function CourseDetailPage({
     notFound();
   }
 
-  const canEdit = session?.user.role !== "COORDINATOR";
+  const role = session?.user.role;
+  const userId = session?.user.id;
+  const canEdit = role !== "COORDINATOR";
+  const isOwnerOrAdmin = role === "ADMIN" || (role === "INSTRUCTOR" && course.instructorId === userId);
 
   return (
     <div>
@@ -32,16 +36,26 @@ export default async function CourseDetailPage({
         title={course.name}
         subtitle={course.description ?? undefined}
         actions={
-          canEdit ? (
-            <Link href={`/courses/${id}/sessions/new`}>
-              <Button>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                מפגש חדש
-              </Button>
-            </Link>
-          ) : null
+          <div className="flex gap-2">
+            {canEdit && (
+              <Link href={`/courses/${id}/sessions/new`}>
+                <Button>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  מפגש חדש
+                </Button>
+              </Link>
+            )}
+            {isOwnerOrAdmin && (
+              <Link href={`/courses/${id}/edit`}>
+                <Button variant="secondary">עריכה</Button>
+              </Link>
+            )}
+            {isOwnerOrAdmin && (
+              <DeleteCourseButton courseId={id} courseName={course.name} />
+            )}
+          </div>
         }
       />
 

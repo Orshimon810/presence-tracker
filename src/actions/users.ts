@@ -13,8 +13,18 @@ async function requireAdmin() {
 }
 
 export async function getUsers() {
-  await requireAdmin();
+  const session = await auth();
+  if (!session?.user) throw new Error("Unauthorized");
+  const { role, id } = session.user;
+  if (role === "INSTRUCTOR") throw new Error("Forbidden");
+
+  const where =
+    role === "COORDINATOR"
+      ? { role: "INSTRUCTOR" as const, coordinatorId: id }
+      : {};
+
   return prisma.user.findMany({
+    where,
     include: {
       coordinator: { select: { fullName: true } },
       _count: { select: { coursesTaught: true, instructors: true } },
@@ -80,7 +90,20 @@ export async function updateUser(userId: string, data: Partial<UserInput>) {
 }
 
 export async function deleteUser(userId: string) {
-  await requireAdmin();
+  const session = await auth();
+  if (!session?.user) throw new Error("Unauthorized");
+  const { role, id } = session.user;
+  if (role === "INSTRUCTOR") throw new Error("Forbidden");
+
+  if (role === "COORDINATOR") {
+    const target = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true, coordinatorId: true },
+    });
+    if (!target || target.role !== "INSTRUCTOR" || target.coordinatorId !== id)
+      throw new Error("Forbidden");
+  }
+
   await prisma.user.delete({ where: { id: userId } });
   revalidatePath("/admin/users");
 }

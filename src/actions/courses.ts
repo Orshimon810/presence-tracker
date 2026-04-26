@@ -63,19 +63,28 @@ export async function createCourse(data: CourseInput) {
   if (session.user.role !== "ADMIN") throw new Error("Forbidden");
 
   const validated = courseSchema.parse(data);
-  const course = await prisma.course.create({ data: validated });
+  const course = await prisma.course.create({
+    data: { ...validated, coordinatorId: validated.coordinatorId || null },
+  });
   revalidatePath("/courses");
   return course;
 }
 
 export async function updateCourse(courseId: string, data: Partial<CourseInput>) {
   const session = await getSession();
-  if (session.user.role !== "ADMIN") throw new Error("Forbidden");
+  const { role, id } = session.user;
+
+  if (role === "COORDINATOR") throw new Error("Forbidden");
+
+  if (role === "INSTRUCTOR") {
+    const existing = await prisma.course.findUnique({ where: { id: courseId }, select: { instructorId: true } });
+    if (!existing || existing.instructorId !== id) throw new Error("Forbidden");
+  }
 
   const validated = courseSchema.partial().parse(data);
   const course = await prisma.course.update({
     where: { id: courseId },
-    data: validated,
+    data: { ...validated, coordinatorId: validated.coordinatorId || null },
   });
   revalidatePath("/courses");
   revalidatePath(`/courses/${courseId}`);
@@ -84,7 +93,14 @@ export async function updateCourse(courseId: string, data: Partial<CourseInput>)
 
 export async function deleteCourse(courseId: string) {
   const session = await getSession();
-  if (session.user.role !== "ADMIN") throw new Error("Forbidden");
+  const { role, id } = session.user;
+
+  if (role === "COORDINATOR") throw new Error("Forbidden");
+
+  if (role === "INSTRUCTOR") {
+    const existing = await prisma.course.findUnique({ where: { id: courseId }, select: { instructorId: true } });
+    if (!existing || existing.instructorId !== id) throw new Error("Forbidden");
+  }
 
   await prisma.course.delete({ where: { id: courseId } });
   revalidatePath("/courses");

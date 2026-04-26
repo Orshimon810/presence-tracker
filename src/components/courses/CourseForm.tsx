@@ -23,6 +23,7 @@ interface CourseFormProps {
   coordinators: Coordinator[];
   defaultValues?: Partial<CourseInput> & { id?: string };
   mode?: "create" | "edit";
+  showAssignmentFields?: boolean;
 }
 
 export function CourseForm({
@@ -30,6 +31,7 @@ export function CourseForm({
   coordinators,
   defaultValues,
   mode = "create",
+  showAssignmentFields = true,
 }: CourseFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -87,25 +89,29 @@ export function CourseForm({
         placeholder="תיאור קצר של הקורס"
       />
 
-      <Select
-        label="מדריך/ה *"
-        value={form.instructorId}
-        onChange={(e) => handleChange("instructorId", e.target.value)}
-        options={instructors.map((i) => ({ value: i.id, label: i.fullName }))}
-        placeholder="בחר/י מדריך/ה"
-        required
-      />
+      {showAssignmentFields && (
+        <>
+          <Select
+            label="מדריך/ה *"
+            value={form.instructorId}
+            onChange={(e) => handleChange("instructorId", e.target.value)}
+            options={instructors.map((i) => ({ value: i.id, label: i.fullName }))}
+            placeholder="בחר/י מדריך/ה"
+            required
+          />
 
-      {coordinators.length > 0 && (
-        <Select
-          label="רכז/ת"
-          value={form.coordinatorId ?? ""}
-          onChange={(e) => handleChange("coordinatorId", e.target.value)}
-          options={[
-            { value: "", label: "ללא רכז/ת" },
-            ...coordinators.map((c) => ({ value: c.id, label: c.fullName })),
-          ]}
-        />
+          {coordinators.length > 0 && (
+            <Select
+              label="רכז/ת"
+              value={form.coordinatorId ?? ""}
+              onChange={(e) => handleChange("coordinatorId", e.target.value)}
+              options={[
+                { value: "", label: "ללא רכז/ת" },
+                ...coordinators.map((c) => ({ value: c.id, label: c.fullName })),
+              ]}
+            />
+          )}
+        </>
       )}
 
       <div className="flex items-center gap-3">
