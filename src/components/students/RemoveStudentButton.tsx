@@ -21,7 +21,7 @@ export function RemoveStudentButton({ studentId, courseId, studentName }: Remove
     <button
       onClick={handleRemove}
       disabled={isPending}
-      className="text-red-400 hover:text-red-600 transition-colors disabled:opacity-40 mr-auto"
+      className="text-red-400 hover:text-red-600 transition-colors disabled:opacity-40 ms-auto flex-shrink-0"
       title="הסר מהקורס"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
